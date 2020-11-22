@@ -29,14 +29,14 @@
 </template>
 
 <script>
-import request from "@/utils/request";
+import { login } from "@/api/user";
 export default {
   name: "LoginIndex",
   data() {
     return {
       user: {
-        mobile: "",
-        code: "",
+        mobile: "13911111111",
+        code: "246810",
         agree: false,
       },
       // checked: false,
@@ -75,19 +75,18 @@ export default {
         //验证通过，提交登录
         this.loading = true;
 
-        request({
-          method: "POST",
-          url: "/mp/v1_0/authorizations",
-          //data用来设置 POST 请求体
-          data: this.user,
-        })
+        login(this.user)
           .then((res) => {
             this.loading = false;
-            console.log(res);
+            // console.log(res);
             this.$message({
               message: "登录成功",
               type: "success",
             });
+
+            window.localStorage.setItem("user",JSON.stringify(res.data.data))
+            //跳转到首页
+            this.$router.push("/");
           })
           .catch((err) => {
             this.loading = false;
