@@ -99,7 +99,7 @@
               circle
               size="mini"
               type="danger"
-              @click="handleDelete(scope.$index, scope.row)"
+              @click.native="onDeleteArticle(scope.row.id)"
             >
               <i class="el-icon-delete"></i>
             </el-button>
@@ -110,6 +110,7 @@
       <el-pagination
         @current-change="onCurrentChange"
         :disabled="loading"
+        :page-size="this.pageSize"
         background
         layout="prev, pager, next"
         :total="totalCount"
@@ -120,7 +121,7 @@
 </template>
 
 <script>
-import { getArticles, getArticlesChannels } from "@/api/article";
+import { getArticles, getArticlesChannels, deleteArticle } from "@/api/article";
 export default {
   name: "ArticleIndex",
   data() {
@@ -189,6 +190,26 @@ export default {
         // console.log(res);
         this.channels = res.data.data.channels;
       });
+    },
+    onDeleteArticle(articleId) {
+      this.$confirm("是否继续删除?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+        .then(() => {
+          console.log(articleId);
+          console.log(articleId.toString());
+          deleteArticle(articleId.toString()).then((res) => {
+            console.log(res);
+          });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除",
+          });
+        });
     },
   },
 };
