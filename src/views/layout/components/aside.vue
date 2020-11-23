@@ -18,15 +18,15 @@
       <i class="iconfont icon-page"></i>
       <span slot="title">内容管理</span>
     </el-menu-item>
-    <el-menu-item index="3">
+    <el-menu-item index="/image">
       <i class="iconfont icon-image"></i>
       <span slot="title">素材管理</span>
     </el-menu-item>
-    <el-menu-item index="4">
+    <el-menu-item index="/publish">
       <i class="iconfont icon-publish"></i>
       <span slot="title">发布文章</span>
     </el-menu-item>
-    <el-menu-item index="5">
+    <el-menu-item index="/comment">
       <i class="iconfont icon-comment"></i>
       <span slot="title">评论管理</span>
     </el-menu-item>
