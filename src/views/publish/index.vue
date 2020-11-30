@@ -10,12 +10,12 @@
         <!-- /面包屑导航 -->
       </div>
       <!-- 发布文章区域 -->
-      <el-form ref="form" :model="article" label-width="80px">
-        <el-form-item label="文章标题">
+      <el-form ref="publish-form" :rules="formRules" :model="article" label-width="80px">
+        <el-form-item label="标题" prop="title">
           <el-input v-model="article.title"></el-input>
         </el-form-item>
-        <el-form-item label="内容">
-          <el-input type="textarea" v-model="article.content"></el-input>
+        <el-form-item label="内容" prop="content">
+          <el-tiptap width="100%" height="300px" v-model="article.content" :extensions="extensions"></el-tiptap>
         </el-form-item>
         <el-form-item label="封面">
           <el-radio-group v-model="article.cover.type">
@@ -25,7 +25,7 @@
             <el-radio :label="-1">自动</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="频道">
+        <el-form-item label="频道" prop="channel_id">
           <el-select v-model="article.channel_id" placeholder="请选择频道">
             <el-option
               :key="index"
@@ -52,8 +52,29 @@ import {
   getArticle,
   updateArticle,
 } from "@/api/article";
+import { ElementTiptap } from "element-tiptap";
+
+import {
+  // necessary extensions
+  Doc,
+  Text,
+  Paragraph,
+  Heading,
+  Bold,
+  Image,
+  Underline,
+  Italic,
+  Strike,
+  ListItem,
+  BulletList,
+  OrderedList,
+} from "element-tiptap";
+import { uploadImage } from "@/api/images";
 export default {
   name: "PublishIndex",
+  components: {
+    "el-tiptap": ElementTiptap,
+  },
   data() {
     return {
       article: {
@@ -66,6 +87,50 @@ export default {
       },
       channels: [],
       channel_id: null,
+      extensions: [
+        new Doc(),
+        new Text(),
+        new Paragraph(),
+        new Heading({ level: 5 }),
+        new Bold({ bubble: true }), // render command-button in bubble menu.
+        new Underline({ bubble: true, menubar: false }), // render command-button in bubble menu but not in menubar.
+        new Italic(),
+        new Image({
+          uploadRequest(file) {
+            const fd = new FormData();
+            fd.append("image", file);
+            return uploadImage(fd).then((res) => {
+              return res.data.data.url;
+            });
+          },
+        }),
+        new Strike(),
+        new ListItem(),
+        new BulletList(),
+        new OrderedList(),
+      ],
+      formRules: {
+        title: [
+          { required: true, message: "请输入文章标题", trigger: "blur" },
+          { min: 5, max: 30, message: "长度在5到30个字符", trigger: "blur" },
+        ],
+        content: [
+          {
+            validator(rule, value, callback) {
+              // console.log("hhhhhhhh");
+              if (value === "<p></p>") {
+                callback(new Error("请输入文章内容"));
+              } else {
+                callback();
+              }
+            },
+          },
+          { required: true, message: "请输入文章内容", trigger: "blur" },
+        ],
+        channel_id: [
+          { required: true, message: "请选择频道", trigger: "blur" },
+        ],
+      },
     };
   },
   created() {
@@ -78,25 +143,31 @@ export default {
   },
   methods: {
     onPublish(draft) {
-      const articleId = this.$route.query.id;
-      if (articleId) {
-        updateArticle(articleId, this.article, draft).then((res) => {
-          this.$message({
-            message: `${draft ? "存入草稿" : "修改"}成功`,
-            type: "success",
-          });
-          this.$router.push("/article");
-        });
-      } else {
-        addArticle(this.article, draft).then((res) => {
-          // console.log(res);
-          this.$message({
-            message: `${draft ? "存入草稿" : "发布"}成功`,
-            type: "success",
-          });
-          this.$router.push("/article");
-        });
-      }
+      this.$refs["publish-form"].validate((valid) => {
+        if (valid) {
+          const articleId = this.$route.query.id;
+          if (articleId) {
+            updateArticle(articleId, this.article, draft).then((res) => {
+              this.$message({
+                message: `${draft ? "存入草稿" : "修改"}成功`,
+                type: "success",
+              });
+              this.$router.push("/article");
+            });
+          } else {
+            addArticle(this.article, draft).then((res) => {
+              // console.log(res);
+              this.$message({
+                message: `${draft ? "存入草稿" : "发布"}成功`,
+                type: "success",
+              });
+              this.$router.push("/article");
+            });
+          }
+        } else {
+          return false;
+        }
+      });
     },
     loadChannels() {
       getArticlesChannels().then((res) => {
