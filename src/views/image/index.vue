@@ -9,70 +9,84 @@
         </el-breadcrumb>
         <!-- /面包屑导航 -->
       </div>
-      <el-radio-group v-model="radio" size="mini">
-        <el-radio-button label="全部"></el-radio-button>
-        <el-radio-button label="收藏"></el-radio-button>
-      </el-radio-group>
+      <div class="btns">
+        <el-radio-group @change="onCollectChange" v-model="collect" size="mini">
+          <el-radio-button :label="false">全部</el-radio-button>
+          <el-radio-button :label="true">收藏</el-radio-button>
+        </el-radio-group>
+        <el-button @click="dialogUploadVisible = true" type="success" size="mini">上传素材</el-button>
+      </div>
+
       <!-- 素材列表 -->
       <el-row :gutter="10">
-        <el-col :xs="12" :sm="6" :md="6" :lg="4">
-          <el-image
-            style=" height: 100px"
-            src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
-            fit="cover"
-          ></el-image>
-        </el-col>
-        <el-col :xs="12" :sm="6" :md="6" :lg="4">
-          <el-image
-            style=" height: 100px"
-            src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
-            fit="cover"
-          ></el-image>
-        </el-col>
-        <el-col :xs="12" :sm="6" :md="6" :lg="4">
-          <el-image
-            style=" height: 100px"
-            src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
-            fit="cover"
-          ></el-image>
-        </el-col>
-        <el-col :xs="12" :sm="6" :md="6" :lg="4">
-          <el-image
-            style=" height: 100px"
-            src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
-            fit="cover"
-          ></el-image>
-        </el-col>
-        <el-col :xs="12" :sm="6" :md="6" :lg="4">
-          <el-image
-            style=" height: 100px"
-            src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
-            fit="cover"
-          ></el-image>
-        </el-col>
-        <el-col :xs="12" :sm="6" :md="6" :lg="4">
-          <el-image
-            style=" height: 100px"
-            src="https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
-            fit="cover"
-          ></el-image>
+        <el-col :key="index" v-for="(img,index) in images" :xs="12" :sm="6" :md="6" :lg="4">
+          <el-image style=" height: 100px" :src="img.url" fit="cover"></el-image>
         </el-col>
       </el-row>
       <!-- /素材列表 -->
     </el-card>
+    <el-dialog :append-to-body="true" title="上传素材" :visible.sync="dialogUploadVisible">
+      <el-upload
+        class="upload-demo"
+        drag
+        name="image"
+        action="http://ttapi.research.itcast.cn/mp/v1_0/user/images"
+        :headers="uploadHeader"
+        :on-success="onUpLoadSuccess"
+        :show-file-list='false'
+        multiple
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">
+          将文件拖到此处，或
+          <em>点击上传</em>
+        </div>
+        <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过500kb</div>
+      </el-upload>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import { getImages } from "@/api/images";
 export default {
   data() {
+    const user = JSON.parse(window.localStorage.getItem("user"));
     return {
-      radio: "全部",
-      radio1: "收藏",
+      collect: false,
+      images: [],
+      dialogUploadVisible: false,
+      uploadHeader: {
+        Authorization: `Bearer ${user.token}`,
+      },
     };
+  },
+  created() {
+    this.loadImages(false);
+  },
+  methods: {
+    loadImages(collect) {
+      getImages({
+        collect,
+      }).then((res) => {
+        this.images = res.data.data.results;
+      });
+    },
+    onCollectChange(value) {
+      this.loadImages(value);
+    },
+    onUpLoadSuccess() {
+      this.dialogUploadVisible = false;
+      this.loadImages(false);
+    },
   },
 };
 </script>
 
 <style>
+.btns {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 20px;
+}
 </style>
