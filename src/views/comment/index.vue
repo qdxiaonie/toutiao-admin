@@ -9,88 +9,102 @@
         </el-breadcrumb>
         <!-- /面包屑导航 -->
       </div>
-      <el-table class="comment-list" :data="articleData" style="width: 100%" stripe>
+      <el-table
+        v-loading="loading"
+        class="comment-list"
+        :data="articleData"
+        style="width: 100%"
+        stripe
+      >
         <el-table-column prop="title" label="标题"></el-table-column>
         <el-table-column prop="total_comment_count" label="总评论数"></el-table-column>
         <el-table-column prop="fans_comment_count" label="粉丝评论数"></el-table-column>
-        <el-table-column label="状态">
+        <el-table-column label="评论状态">
           <template slot-scope="scope">{{scope.row.comment_status ? '正常' : '关闭'}}</template>
         </el-table-column>
-        <el-table-column prop="address" label="操作">
+        <el-table-column label="操作">
           <template slot-scope="scope">
             <el-switch
               v-model="scope.row.comment_status"
               active-color="#13ce66"
               inactive-color="#ff4949"
+              :disabled="scope.row.statusDisabled"
+              @change="onStatusChange(scope.row)"
             ></el-switch>
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
+        :disabled="disabled"
         background
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
-        :current-page="currentPage4"
-        :page-sizes="[100, 200, 300, 400]"
-        :page-size="100"
+        :current-page.sync="page"
+        :page-sizes="[10, 20, 50, 100]"
+        :page-size.sync="pageSize"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="400"
+        :total="totalCount"
       ></el-pagination>
     </el-card>
   </div>
 </template>
 
 <script>
-import { getArticles } from "@/api/article";
+import { getArticles, uploadCommentStatus } from "@/api/article";
 export default {
   created() {
     this.loadArticles();
   },
   data() {
     return {
-      tableData: [
-        {
-          date: "2016-05-02",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1518 弄",
-        },
-        {
-          date: "2016-05-04",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1517 弄",
-        },
-        {
-          date: "2016-05-01",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1519 弄",
-        },
-        {
-          date: "2016-05-03",
-          name: "王小虎",
-          address: "上海市普陀区金沙江路 1516 弄",
-        },
-      ],
       articleData: [],
-      currentPage1: 5,
-      currentPage2: 5,
-      currentPage3: 5,
-      currentPage4: 4,
+      totalCount: 0,
+      pageSize: 10,
+      page: 1,
+      loading: false,
+      disabled: false,
     };
   },
   methods: {
-    handleSizeChange(val) {
-      console.log(`每页 ${val} 条`);
+    handleSizeChange() {
+      this.loadArticles(1);
     },
-    handleCurrentChange(val) {
-      console.log(`当前页: ${val}`);
+    handleCurrentChange(page) {
+      this.loadArticles(page);
     },
-    loadArticles() {
+    loadArticles(page = 1) {
+      this.disabled = true;
+      this.loading = true;
+      this.page = page;
       getArticles({
         response_type: "comment",
+        page,
+        per_page: this.pageSize,
       }).then((res) => {
-        this.articleData = res.data.data.results;
+        const results = res.data.data.results;
+        results.forEach((article) => {
+          article.statusDisabled = false;
+        });
+        this.articleData = results;
+        this.totalCount = res.data.data.total_count;
+        this.loading = false;
+        this.disabled = false;
       });
+    },
+    onStatusChange(article) {
+      article.statusDisabled = true;
+      console.log(article);
+      uploadCommentStatus(article.id.toString(), article.comment_status).then(
+        (res) => {
+          console.log(res);
+          article.statusDisabled = false;
+          this.$message({
+            type: "success",
+            message: article.comment_status ? "开启成功" : "关闭成功",
+          });
+        }
+      );
     },
   },
 };
