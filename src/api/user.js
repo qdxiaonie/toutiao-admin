@@ -7,7 +7,7 @@ export const login = data => {
         data
     })
 }
-
+//获取用户资料
 export const getUserProfile = () => {
    
     return request({

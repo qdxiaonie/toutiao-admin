@@ -34,7 +34,7 @@
       <i class="iconfont icon-people"></i>
       <span slot="title">粉丝管理</span>
     </el-menu-item>
-    <el-menu-item index="7">
+    <el-menu-item index="/settings">
       <i class="iconfont icon-set"></i>
       <span slot="title">个人设置</span>
     </el-menu-item>
