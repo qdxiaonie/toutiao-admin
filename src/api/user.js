@@ -18,3 +18,21 @@ export const getUserProfile = () => {
         //  } 
     })
 }
+//修改用户资料
+export const updateUserProfile = data => {
+   
+    return request({
+        method: 'PATCH',
+        url: '/mp/v1_0/user/profile',
+        data
+    })
+}
+//修改用户头像
+export const updateUserPhoto = data => {
+   
+    return request({
+        method: 'PATCH',
+        url: '/mp/v1_0/user/photo',
+        data
+    })
+}
