@@ -65,6 +65,7 @@
 import { getUserProfile, updateUserProfile, updateUserPhoto } from "@/api/user";
 import "cropperjs/dist/cropper.css";
 import Cropper from "cropperjs";
+import globalBus from "@/utils/global-bus";
 export default {
   data() {
     return {
@@ -114,6 +115,7 @@ export default {
       this.$refs["update-form"].validate((valid) => {
         if (valid) {
           updateUserProfile(this.user).then((res) => {
+            globalBus.$emit("update-user", this.user);
             this.$message({
               type: "success",
               message: "更新成功",
@@ -174,6 +176,11 @@ export default {
           this.user.photo = window.URL.createObjectURL(file);
           this.dialogVisible = false;
           this.updatePhotoLoading = false;
+          globalBus.$emit("update-user", this.user);
+          this.$message({
+            type: "success",
+            message: "更新头像成功",
+          });
         });
       });
     },

@@ -10,7 +10,7 @@
             :class="{'el-icon-s-unfold':isCollapse,'el-icon-s-fold':!isCollapse}"
             @click="isCollapse =!isCollapse"
           ></i>
-          <span> 中山原子创客空间</span>
+          <span>中山原子创客空间</span>
         </div>
         <div class="user-wrap">
           <div class="userimg">
@@ -38,6 +38,7 @@
 <script>
 import AppAside from "./components/aside.vue";
 import { getUserProfile } from "@/api/user";
+import globalBus from "@/utils/global-bus";
 export default {
   data() {
     return {
@@ -49,6 +50,10 @@ export default {
   created() {
     //组件初始化好，请求获取用户资料
     this.loaderUserProfile();
+    globalBus.$on("update-user", (data) => {
+      this.user.name = data.name;
+      this.user.photo = data.photo;
+    });
   },
   methods: {
     loaderUserProfile() {
