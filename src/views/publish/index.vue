@@ -24,7 +24,15 @@
             <el-radio :label="0">无图</el-radio>
             <el-radio :label="-1">自动</el-radio>
           </el-radio-group>
+          <template v-if="article.cover.type > 0">
+            <article-cover
+              :key="index"
+              v-for="(cover,index) in article.cover.type"
+              v-model="article.cover.images[index]"
+            />
+          </template>
         </el-form-item>
+
         <el-form-item label="频道" prop="channel_id">
           <el-select v-model="article.channel_id" placeholder="请选择频道">
             <el-option
@@ -53,6 +61,7 @@ import {
   updateArticle,
 } from "@/api/article";
 import { ElementTiptap } from "element-tiptap";
+import ArticleCover from "./components/cover";
 
 import {
   // necessary extensions
@@ -72,8 +81,10 @@ import {
 import { uploadImage } from "@/api/images";
 export default {
   name: "PublishIndex",
+
   components: {
     "el-tiptap": ElementTiptap,
+    "article-cover": ArticleCover,
   },
   data() {
     return {
@@ -117,7 +128,6 @@ export default {
         content: [
           {
             validator(rule, value, callback) {
-              // console.log("hhhhhhhh");
               if (value === "<p></p>") {
                 callback(new Error("请输入文章内容"));
               } else {
@@ -149,17 +159,18 @@ export default {
           if (articleId) {
             updateArticle(articleId, this.article, draft).then((res) => {
               this.$message({
-                message: `${draft ? "存入草稿" : "修改"}成功`,
                 type: "success",
+                message: `${draft ? "存入草稿" : "修改"}成功`,
               });
               this.$router.push("/article");
             });
           } else {
             addArticle(this.article, draft).then((res) => {
               // console.log(res);
+              // this.$message(`${draft ? "存入草稿" : "发布"}成功`);
               this.$message({
-                message: `${draft ? "存入草稿" : "发布"}成功`,
                 type: "success",
+                message: `${draft ? "存入草稿" : "发布"}成功`,
               });
               this.$router.push("/article");
             });
@@ -171,16 +182,18 @@ export default {
     },
     loadChannels() {
       getArticlesChannels().then((res) => {
-        // console.log(res);
         this.channels = res.data.data.channels;
       });
     },
     //加载文章内容
     loadArticle() {
-      // console.log("res");
       getArticle(this.$route.query.id).then((res) => {
         this.article = res.data.data;
       });
+    },
+    // 上传封面
+    onUpdateCover(index, url) {
+      this.article.cover.images[index] = url;
     },
   },
 };
