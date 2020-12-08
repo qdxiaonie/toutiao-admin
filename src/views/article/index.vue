@@ -133,7 +133,7 @@ export default {
       articleData: [],
       articleStatus: [
         {
-          type: "",
+          type: "warning",
           text: "草稿",
         },
         {
@@ -208,7 +208,7 @@ export default {
           this.$message({
             type: "info",
             message: "已取消删除",
-          });
+          });sa                                                         
         });
     },
   },

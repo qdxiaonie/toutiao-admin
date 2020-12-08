@@ -4,9 +4,11 @@
       <img width="100%" height="100%" ref="cover-image" :src="value" alt />
     </div>
 
-    <el-dialog append-to-body title="选择封面" :visible.sync="dialogVisible" width="30%">
+    <el-dialog append-to-body title="选择封面" :visible.sync="dialogVisible" width="60%">
       <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
-        <el-tab-pane label="素材库" name="first">素材库</el-tab-pane>
+        <el-tab-pane label="素材库" name="first">
+          <image-list ref="image-list" is-show-selected :is-show-add="false" :is-show-action="false" />
+        </el-tab-pane>
         <el-tab-pane label="上传图片" name="second">
           <input ref="file" type="file" @change="onFileChange" />
           <img width="200px" ref="preview-cover" src alt />
@@ -22,6 +24,8 @@
 
 <script>
 import { uploadImage } from "@/api/images";
+
+import imageList from "@/views/image/components/image-list.vue";
 export default {
   data() {
     return {
@@ -31,6 +35,7 @@ export default {
     };
   },
   props: ["value"],
+  components: { imageList },
   methods: {
     showCoverSelect() {
       this.dialogVisible = true;
@@ -65,6 +70,19 @@ export default {
             type: "success",
             message: "上传封面成功",
           });
+        });
+      } else if (this.activeName == "first") {
+        const imageList = this.$refs["image-list"];
+        const selected = imageList.selected;
+        if (selected === null) {
+          this.$message("请选择图片");
+          return;
+        }
+        this.dialogVisible = false;
+        this.$emit("input", imageList.images[selected].url);
+        this.$message({
+          type: "success",
+          message: "上传封面成功",
         });
       }
     },
