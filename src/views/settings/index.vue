@@ -40,10 +40,9 @@
         </el-col>
 
         <el-dialog
-          append-to-body
-          title="提示"
+          append-to-body   
           :visible.sync="dialogVisible"
-          width="30%"
+          width="50%"
           :before-close="handleClose"
           @opened="onDialogOpened"
         >
