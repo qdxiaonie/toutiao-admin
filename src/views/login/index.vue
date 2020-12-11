@@ -29,21 +29,21 @@
 </template>
 
 <script>
-import { login } from "@/api/user";
+import { onLogin } from "@/api/user";
 export default {
   name: "LoginIndex",
   data() {
     return {
       user: {
-        mobile: "13911111111",
-        code: "246810",
+        mobile: "",
+        code: "",
         agree: false,
       },
       // checked: false,
       loading: false,
       formRules: {
         mobile: [
-          { required: true, message: "请输入手机号", trigger: "blur" },
+          { required: true, message: "请输入手机号", trigger: "change" },
           {
             pattern: /^1[3|5|7|8|9]\d{9}$/,
             message: "请输入正确的号码格式",
@@ -71,35 +71,12 @@ export default {
           },
         ],
       },
-      login() {
-        //验证通过，提交登录
-        this.loading = true;
-
-        login(this.user)
-          .then((res) => {
-            this.loading = false;
-            // console.log(res);
-            this.$message({
-              message: "登录成功",
-              type: "success",
-            });
-
-            window.localStorage.setItem("user",JSON.stringify(res.data.data))
-            //跳转到首页
-            this.$router.push("/");
-          })
-          .catch((err) => {
-            this.loading = false;
-            console.log("登录失败", err);
-            this.$message.error("登录失败，手机号或验证码错误");
-          });
-      },
     };
   },
   methods: {
     onLogin() {
       //获取表单数据
-      const user = this.user;
+      // const user = this.user;
       //表单验证
 
       this.$refs["loginForm"].validate((valid) => {
@@ -109,6 +86,27 @@ export default {
           return false;
         }
       });
+    },
+    login() {
+      this.loading = true;
+      onLogin(this.user)
+        .then((res) => {
+          this.loading = false;
+          console.log(res);
+          this.$message({
+            message: "登录成功",
+            type: "success",
+          });
+
+          window.localStorage.setItem("user", JSON.stringify(res.data.data));
+          //跳转到首页
+          this.$router.push("/");
+        })
+        .catch((err) => {
+          this.loading = false;
+          console.log("登录失败", err);
+          this.$message.error("登录失败，手机号或验证码错误");
+        });
     },
   },
 };
